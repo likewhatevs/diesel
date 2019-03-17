@@ -32,12 +32,6 @@ macro_rules! tuple_impls {
                     unreachable!("Tuples should never implement `ToSql` directly");
                 }
 
-                #[cfg(feature = "with-deprecated")]
-                #[allow(deprecated)]
-                fn row_metadata(out: &mut Vec<__DB::TypeMetadata>, lookup: &__DB::MetadataLookup) {
-                    $(<__DB as HasSqlType<$T>>::row_metadata(out, lookup);)+
-                }
-
                 #[cfg(feature = "mysql")]
                 fn mysql_row_metadata(out: &mut Vec<(__DB::TypeMetadata, IsSigned)>, lookup: &__DB::MetadataLookup) {
                     $(<__DB as HasSqlType<$T>>::mysql_row_metadata(out, lookup);)+
@@ -54,7 +48,7 @@ macro_rules! tuple_impls {
                 const FIELDS_NEEDED: usize = $($T::FIELDS_NEEDED +)+ 0;
 
                 fn build_from_row<RowT: Row<__DB>>(row: &mut RowT) -> Result<Self, Box<Error+Send+Sync>> {
-                    Ok(($(try!($T::build_from_row(row)),)+))
+                    Ok(($($T::build_from_row(row)?,)+))
                 }
             }
 

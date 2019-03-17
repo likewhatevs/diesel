@@ -146,10 +146,11 @@
 //! a user and all of its posts, that type is `(User, Vec<Post>)`.
 //!
 //! Next lets look at how to load the children for more than one parent record.
-//! [`belonging_to`][belonging-to] can be used to load the data, but we'll also need to group it
-//! with its parents. For this we use an additional method [`grouped_by`][grouped-by]
+//! [`belonging_to`] can be used to load the data, but we'll also need to group it
+//! with its parents. For this we use an additional method [`grouped_by`].
 //!
-//! [grouped-by]: trait.GroupedBy.html#tymethod.grouped_by
+//! [`grouped_by`]: trait.GroupedBy.html#tymethod.grouped_by
+//! [`belonging_to`]: ../query_dsl/trait.BelongingToDsl.html#tymethod.belonging_to
 //!
 //! ```rust
 //! # #[macro_use] extern crate diesel;
@@ -259,7 +260,7 @@
 //! # }
 //! ```
 //!
-//! `grouped_by` can be called multiple times
+//! [`grouped_by`] can be called multiple times
 //! if you have multiple children or grandchildren.
 //!
 //! For example, this code will load some users,

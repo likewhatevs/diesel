@@ -120,7 +120,8 @@ fn selecting_columns_and_tables_with_reserved_names() {
             integer("id").primary_key().auto_increment(),
             integer("join").not_null(),
         ),
-    ).execute(&connection)
+    )
+    .execute(&connection)
     .unwrap();
     connection
         .execute("INSERT INTO \"select\" (\"join\") VALUES (1), (2), (3)")
@@ -147,7 +148,8 @@ fn selecting_columns_with_different_definition_order() {
             string("hair_color"),
             string("name").not_null(),
         ),
-    ).execute(&connection)
+    )
+    .execute(&connection)
     .unwrap();
     let expected_user = User::with_hair_color(1, "Sean", "black");
     insert_into(users::table)
@@ -181,6 +183,14 @@ fn selection_using_subselect() {
         .unwrap();
 
     assert_eq!(vec!["Hello".to_string()], data);
+}
+
+table! {
+    users_select_for_update_modifieres {
+        id -> Integer,
+        name -> Text,
+        hair_color -> Nullable<Text>,
+    }
 }
 
 table! {
@@ -226,7 +236,8 @@ fn select_for_update_locks_selected_rows() {
             string("name").not_null(),
             string("hair_color"),
         ),
-    ).execute(&conn_1)
+    )
+    .execute(&conn_1)
     .unwrap();
     conn_1
         .batch_execute(
@@ -235,7 +246,8 @@ fn select_for_update_locks_selected_rows() {
             CREATE UNIQUE INDEX users_select_for_update_name ON users_select_for_update (name);
             INSERT INTO users_select_for_update (name) VALUES ('Sean'), ('Tess');
         ",
-        ).unwrap();
+        )
+        .unwrap();
     conn_1.begin_test_transaction().unwrap();
 
     let _sean = users_select_for_update
@@ -281,7 +293,7 @@ fn select_for_update_locks_selected_rows() {
 #[cfg(feature = "postgres")]
 #[test]
 fn select_for_update_modifiers() {
-    use self::users_select_for_update::dsl::*;
+    use self::users_select_for_update_modifieres::dsl::*;
 
     // We need to actually commit some data for the
     // test
@@ -291,28 +303,34 @@ fn select_for_update_modifiers() {
 
     // Recreate the table
     conn_1
-        .execute("DROP TABLE IF EXISTS users_select_for_update")
+        .execute("DROP TABLE IF EXISTS users_select_for_update_modifieres")
         .unwrap();
     create_table(
-        "users_select_for_update",
+        "users_select_for_update_modifieres",
         (
             integer("id").primary_key().auto_increment(),
             string("name").not_null(),
             string("hair_color"),
         ),
-    ).execute(&conn_1)
+    )
+    .execute(&conn_1)
     .unwrap();
 
     // Add some test data
     conn_1
-        .execute("INSERT INTO users_select_for_update (name) VALUES ('Sean'), ('Tess')")
+        .execute(
+            "
+            INSERT INTO users_select_for_update_modifieres (name)
+            VALUES ('Sean'), ('Tess')
+            ",
+        )
         .unwrap();
 
     // Now both connections have begun a transaction
     conn_1.begin_test_transaction().unwrap();
 
     // Lock the "Sean" row
-    let _sean = users_select_for_update
+    let _sean = users_select_for_update_modifieres
         .order(name)
         .for_update()
         .first::<User>(&conn_1)
@@ -320,7 +338,7 @@ fn select_for_update_modifiers() {
 
     // Try to access the "Sean" row with `NOWAIT`
     conn_2.execute("SET STATEMENT_TIMEOUT TO 1000").unwrap();
-    let result = users_select_for_update
+    let result = users_select_for_update_modifieres
         .order(name)
         .for_update()
         .no_wait()
@@ -333,7 +351,7 @@ fn select_for_update_modifiers() {
     }
 
     // Try to access the "Sean" row with `SKIP LOCKED`
-    let tess = users_select_for_update
+    let tess = users_select_for_update_modifieres
         .order(name)
         .for_update()
         .skip_locked()
@@ -372,7 +390,8 @@ fn select_for_no_key_update_modifiers() {
             string("name").not_null(),
             string("hair_color"),
         ),
-    ).execute(&conn_1)
+    )
+    .execute(&conn_1)
     .unwrap();
 
     create_table(
@@ -381,7 +400,8 @@ fn select_for_no_key_update_modifiers() {
             integer("id").primary_key().auto_increment(),
             integer("users_fk").not_null(),
         ),
-    ).execute(&conn_1)
+    )
+    .execute(&conn_1)
     .unwrap();
 
     // Add a foreign key
@@ -389,13 +409,15 @@ fn select_for_no_key_update_modifiers() {
         .execute(
             "ALTER TABLE users_fk_for_no_key_update ADD CONSTRAINT users_fk \
              FOREIGN KEY (users_fk) REFERENCES users_select_for_no_key_update(id)",
-        ).unwrap();
+        )
+        .unwrap();
 
     // Add some test data
     conn_1
         .execute(
             "INSERT INTO users_select_for_no_key_update (name) VALUES ('Sean'), ('Tess'), ('Will')",
-        ).unwrap();
+        )
+        .unwrap();
 
     conn_1.begin_test_transaction().unwrap();
 
@@ -411,7 +433,8 @@ fn select_for_no_key_update_modifiers() {
         .execute(
             "INSERT INTO users_fk_for_no_key_update (users_fk) \
              SELECT id FROM users_select_for_no_key_update where name='Sean'",
-        ).unwrap();
+        )
+        .unwrap();
 
     // Check that it was successfully added
     let expected_data = vec![(1, 1)];
@@ -461,7 +484,8 @@ fn select_can_be_called_on_query_that_is_valid_subselect_but_invalid_query() {
         .values(&vec![
             tess.new_post("Tess", None),
             sean.new_post("Hi", None),
-        ]).execute(&connection)
+        ])
+        .execute(&connection)
         .unwrap();
 
     let invalid_query_but_valid_subselect = posts::table

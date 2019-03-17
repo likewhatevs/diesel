@@ -43,7 +43,7 @@ where
     type SqlType = Bool;
 }
 
-impl<T> NonAggregate for Exists<T> {}
+impl<T> NonAggregate for Exists<T> where Subselect<T, ()>: NonAggregate {}
 
 impl<T, DB> QueryFragment<DB> for Exists<T>
 where
@@ -62,10 +62,12 @@ impl<T, QS> SelectableExpression<QS> for Exists<T>
 where
     Self: AppearsOnTable<QS>,
     Subselect<T, ()>: SelectableExpression<QS>,
-{}
+{
+}
 
 impl<T, QS> AppearsOnTable<QS> for Exists<T>
 where
     Self: Expression,
     Subselect<T, ()>: AppearsOnTable<QS>,
-{}
+{
+}

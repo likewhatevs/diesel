@@ -34,14 +34,19 @@ impl<T, ST, QS> SelectableExpression<QS> for Subselect<T, ST>
 where
     Subselect<T, ST>: AppearsOnTable<QS>,
     T: ValidSubselect<QS>,
-{}
+{
+}
 
 impl<T, ST, QS> AppearsOnTable<QS> for Subselect<T, ST>
 where
     Subselect<T, ST>: Expression,
     T: ValidSubselect<QS>,
-{}
+{
+}
 
+// FIXME: This probably isn't sound. The subselect can reference columns from
+// the outer query, and is affected by the `GROUP BY` clause of the outer query
+// identically to using it outside of a subselect
 impl<T, ST> NonAggregate for Subselect<T, ST> {}
 
 impl<T, ST, DB> QueryFragment<DB> for Subselect<T, ST>

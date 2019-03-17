@@ -39,11 +39,9 @@ fn test_count_star() {
     assert_eq!(Ok(1), source.first(&connection));
 
     // Ensure we're doing COUNT(*) instead of COUNT(table.*) which is going to be more efficient
-    assert!(
-        debug_query::<TestBackend, _>(&source)
-            .to_string()
-            .starts_with("SELECT COUNT(*) FROM")
-    );
+    assert!(debug_query::<TestBackend, _>(&source)
+        .to_string()
+        .starts_with("SELECT COUNT(*) FROM"));
 }
 
 table! {
@@ -98,7 +96,8 @@ fn test_min_max_of_array() {
             na.eq(vec![1, 1, 100]),
             na.eq(vec![1, 5, 5]),
             na.eq(vec![5, 0]),
-        ]).execute(&connection)
+        ])
+        .execute(&connection)
         .unwrap();
 
     let max_query = number_arrays.select(max(na));
@@ -432,12 +431,14 @@ fn test_arrays_a() {
     assert_eq!(value, vec![1, 2]);
 }
 
+#[cfg(feature = "postgres")]
+use diesel::sql_types::{Array, Int4};
+#[cfg(feature = "postgres")]
+sql_function!(fn unnest(a: Array<Int4>) -> Int4);
+
 #[test]
 #[cfg(feature = "postgres")]
 fn test_arrays_b() {
-    use diesel::sql_types::{Array, Int4};
-    sql_function!(fn unnest(a: Array<Int4>) -> Int4);
-
     use self::numbers::columns::*;
     use self::numbers::table as numbers;
 

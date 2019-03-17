@@ -93,41 +93,6 @@
 //! You can come ask for help at
 //! [gitter.im/diesel-rs/diesel](https://gitter.im/diesel-rs/diesel)
 
-#![cfg_attr(
-    feature = "large-tables",
-    deprecated(
-        since = "1.2.0",
-        note = "The large-tables feature has been renamed to 32-column-tables"
-    )
-)]
-#![cfg_attr(
-    feature = "huge-tables",
-    deprecated(
-        since = "1.2.0",
-        note = "The huge-tables feature has been renamed to 64-column-tables"
-    )
-)]
-#![cfg_attr(
-    feature = "x32-column-tables",
-    deprecated(
-        since = "1.2.1",
-        note = "The x32-column-tables feature has been reanmed to 32-column-tables. The x was a workaround for a bug in crates.io that has since been resolved"
-    )
-)]
-#![cfg_attr(
-    feature = "x64-column-tables",
-    deprecated(
-        since = "1.2.1",
-        note = "The x64-column-tables feature has been reanmed to 64-column-tables. The x was a workaround for a bug in crates.io that has since been resolved"
-    )
-)]
-#![cfg_attr(
-    feature = "x128-column-tables",
-    deprecated(
-        since = "1.2.1",
-        note = "The x128-column-tables feature has been reanmed to 128-column-tables. The x was a workaround for a bug in crates.io that has since been resolved"
-    )
-)]
 #![cfg_attr(feature = "unstable", feature(specialization, try_from))]
 // Built-in Lints
 #![deny(
@@ -137,45 +102,33 @@
     missing_docs
 )]
 // Clippy lints
-#![cfg_attr(
-    feature = "cargo-clippy",
-    allow(
-        option_map_unwrap_or_else,
-        option_map_unwrap_or,
-        match_same_arms,
-        type_complexity,
-        redundant_field_names
-    )
+#![allow(
+    clippy::option_map_unwrap_or_else,
+    clippy::option_map_unwrap_or,
+    clippy::match_same_arms,
+    clippy::type_complexity,
+    clippy::redundant_field_names
 )]
-#![cfg_attr(
-    feature = "cargo-clippy",
-    warn(
-        option_unwrap_used,
-        result_unwrap_used,
-        print_stdout,
-        wrong_pub_self_convention,
-        mut_mut,
-        non_ascii_literal,
-        similar_names,
-        unicode_not_nfc,
-        enum_glob_use,
-        if_not_else,
-        items_after_statements,
-        used_underscore_binding
-    )
-)]
-#![cfg_attr(
-    all(test, feature = "cargo-clippy"),
-    allow(option_unwrap_used, result_unwrap_used)
+#![cfg_attr(test, allow(clippy::option_map_unwrap_or, clippy::result_unwrap_used))]
+#![warn(
+    clippy::option_unwrap_used,
+    clippy::result_unwrap_used,
+    clippy::print_stdout,
+    clippy::wrong_pub_self_convention,
+    clippy::mut_mut,
+    clippy::non_ascii_literal,
+    clippy::similar_names,
+    clippy::unicode_not_nfc,
+    clippy::enum_glob_use,
+    clippy::if_not_else,
+    clippy::items_after_statements,
+    clippy::used_underscore_binding
 )]
 
 #[cfg(feature = "postgres")]
 #[macro_use]
 extern crate bitflags;
 extern crate byteorder;
-// This is required to make `diesel_derives` re-export, but cargo-clippy thinks its unused
-#[cfg_attr(feature = "cargo-clippy", allow(useless_attribute))]
-#[allow(unused_imports)]
 #[macro_use]
 extern crate diesel_derives;
 #[doc(hidden)]
@@ -212,7 +165,6 @@ pub mod serialize;
 pub mod sql_types;
 pub mod migration;
 pub mod row;
-pub mod types;
 
 #[cfg(feature = "mysql")]
 pub mod mysql;
@@ -269,12 +221,6 @@ pub mod helper_types {
     pub type FindBy<Source, Column, Value> = Filter<Source, Eq<Column, Value>>;
 
     /// Represents the return type of `.for_update()`
-    #[cfg(feature = "with-deprecated")]
-    #[allow(deprecated)]
-    pub type ForUpdate<Source> = <Source as ForUpdateDsl>::Output;
-
-    /// Represents the return type of `.for_update()`
-    #[cfg(not(feature = "with-deprecated"))]
     pub type ForUpdate<Source> = <Source as LockingDsl<lock::ForUpdate>>::Output;
 
     /// Represents the return type of `.for_no_key_update()`
